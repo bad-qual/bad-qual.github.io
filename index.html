@@ -1,0 +1,466 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BAD.QUAL - Ultimate Bass Boosted LoLCat Audio Destroyer</title>
+  <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.0/lame.min.js"></script>
+  <style>
+    :root {
+      --rainbow-1: #ff0000;
+      --rainbow-2: #ff8000;
+      --rainbow-3: #ffff00;
+      --rainbow-4: #00ff00;
+      --rainbow-5: #00ffff;
+      --rainbow-6: #0000ff;
+      --rainbow-7: #8000ff;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #000;
+      font-family: 'Comic Sans MS', cursive;
+      color: #fff;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    .crt::after {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, transparent 60%, rgba(0,0,0,0.4));
+      pointer-events: none;
+    }
+
+    .scanlines {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent 0px,
+        rgba(0,255,0,0.1) 1px,
+        transparent 2px
+      );
+      animation: scan 1s linear infinite;
+      pointer-events: none;
+    }
+
+    header {
+      text-align: center;
+      margin: 20px 0;
+      position: relative;
+    }
+
+    h1 {
+      font-size: 4rem;
+      text-shadow: 4px 4px var(--rainbow-1),
+                   8px 8px var(--rainbow-3),
+                   12px 12px var(--rainbow-5);
+      transform: rotate(-5deg);
+      margin: 0;
+      animation: titleGlitch 0.4s infinite;
+    }
+
+    .upload-container {
+      border: 4px dashed;
+      padding: 2rem;
+      margin: 2rem;
+      border-image: linear-gradient(
+        45deg,
+        var(--rainbow-1),
+        var(--rainbow-3),
+        var(--rainbow-5),
+        var(--rainbow-7)
+      ) 1;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    input[type="file"] {
+      font-size: 1.5rem;
+      color: #fff;
+    }
+
+    button {
+      background: linear-gradient(45deg, #ff00ff, #00ffff);
+      border: none;
+      padding: 1rem 2rem;
+      font-size: 1.5rem;
+      cursor: pointer;
+      font-family: inherit;
+      margin: 1rem;
+      transform: skew(-10deg);
+      transition: 0.3s all;
+    }
+
+    button:hover {
+      filter: hue-rotate(90deg);
+      transform: skew(-10deg) scale(1.1);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    @keyframes scan {
+      from { background-position: 0 0; }
+      to { background-position: 0 100%; }
+    }
+
+    @keyframes titleGlitch {
+      0% { transform: rotate(-5deg) translate(2px, 1px); }
+      25% { transform: rotate(-5deg) translate(-1px, -2px); }
+      50% { transform: rotate(-5deg) translate(3px, -1px); }
+      75% { transform: rotate(-5deg) translate(-2px, 2px); }
+      100% { transform: rotate(-5deg) translate(0px, 0px); }
+    }
+
+    @keyframes backgroundTransition {
+      0% { background-position: 0% 0%; }
+      100% { background-position: 100% 100%; }
+    }
+
+    .rainbow-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        45deg,
+        var(--rainbow-1),
+        var(--rainbow-2),
+        var(--rainbow-3),
+        var(--rainbow-4),
+        var(--rainbow-5),
+        var(--rainbow-6),
+        var(--rainbow-7)
+      );
+      background-size: 400% 400%;
+      animation: backgroundTransition 10s linear infinite;
+      mix-blend-mode: overlay;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .progress-bar {
+      width: 50%;
+      height: 20px;
+      background: #fff;
+      border: 1px solid #fff;
+      position: relative;
+    }
+
+    .progress-bar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 100%;
+      background: #00ff00;
+    }
+  </style>
+</head>
+<body class="crt">
+  <div class="scanlines"></div>
+  <div class="rainbow-bg"></div>
+  
+  <header>
+    <h1>BAD.QUAL</h1>
+    <h2>ULTIMATE BASS BOOSTED MEME MACHINE</h2>
+  </header>
+
+  <div class="upload-container">
+    <input type="file" id="audioInput" accept="audio/*">
+    <div class="button-group">
+      <button onclick="togglePlayback()">PLZ CLIK 4 BASS</button>
+      <button onclick="downloadProcessed()">DOWNLOAD BASSED MP3</button>
+    </div>
+  </div>
+
+  <div class="overlay" id="processingOverlay">
+    <div class="progress-bar" id="progressBar">
+      <div style="width: 0%; background: #00ff00; height: 100%"></div>
+    </div>
+  </div>
+
+  <script>
+    let audioContext = new (window.AudioContext || window.webkitAudioContext)()
+    let sourceNode = null
+    let isPlaying = false
+    let currentAudioBuffer = null
+
+    async function loadAudio(file) {
+      if (sourceNode) sourceNode.stop()
+      
+      const arrayBuffer = await file.arrayBuffer()
+      const audioBuffer = await audioContext.decodeAudioData(arrayBuffer)
+      currentAudioBuffer = audioBuffer // Store for downloading
+      
+      // Create audio graph
+      sourceNode = audioContext.createBufferSource()
+      sourceNode.buffer = audioBuffer
+      
+      // Create extreme distortion
+      const distortion = audioContext.createWaveShaper()
+      distortion.curve = makeDistortionCurve(4000)
+      distortion.oversample = '4x'
+      
+      // Create bass boost
+      const bassBoost = audioContext.createBiquadFilter()
+      bassBoost.type = 'lowshelf'
+      bassBoost.frequency.setValueAtTime(200, audioContext.currentTime)
+      bassBoost.gain.setValueAtTime(50, audioContext.currentTime)
+      
+      // Create bitcrusher
+      const bitcrusher = new BitCrusher(audioContext, {
+        bits: 4,
+        normfreq: 0.1
+      })
+      
+      // Create final limiter
+      const limiter = audioContext.createDynamicsCompressor()
+      limiter.threshold.setValueAtTime(-20, audioContext.currentTime)
+      limiter.ratio.setValueAtTime(20, audioContext.currentTime)
+      
+      // Connect nodes
+      sourceNode
+        .connect(distortion)
+        .connect(bassBoost)
+        .connect(bitcrusher.input)
+        .connect(limiter)
+        .connect(audioContext.destination)
+
+      sourceNode.start(0)
+      isPlaying = true
+    }
+
+    function makeDistortionCurve(amount) {
+      const k = typeof amount === 'number' ? amount : 50
+      const n = 44100
+      const curve = new Float32Array(n)
+      for (let i = 0; i < n; i++) {
+        const x = (i * 2) / n - 1
+        curve[i] = Math.tanh(k * x) * 0.8
+      }
+      return curve
+    }
+
+    class BitCrusher {
+      constructor(context, props) {
+        this.input = context.createGain()
+        this.output = context.createGain()
+        
+        this.bits = props.bits || 8
+        this.normfreq = props.normfreq || 0.1
+        
+        this.phaser = 0
+        this.lastValue = 0
+        
+        const scriptNode = context.createScriptProcessor(4096, 1, 1)
+        scriptNode.onaudioprocess = e => this.process(e)
+        
+        this.input.connect(scriptNode)
+        scriptNode.connect(this.output)
+      }
+
+      process(e) {
+        const input = e.inputBuffer.getChannelData(0)
+        const output = e.outputBuffer.getChannelData(0)
+        const step = Math.pow(0.5, this.bits)
+        const phaserIncr = this.normfreq * 44100
+        
+        for (let i = 0; i < input.length; i++) {
+          this.phaser += phaserIncr
+          if (this.phaser >= 1) {
+            this.phaser--
+            this.lastValue = step * Math.floor(input[i]/step + 0.5)
+          }
+          output[i] = this.lastValue
+        }
+      }
+    }
+
+    let mp3Encoder = null;
+
+    async function downloadProcessed() {
+      if (!currentAudioBuffer) {
+        alert('UPLOAD FILE FIRST PLZ!');
+        return;
+      }
+
+      const overlay = document.getElementById('processingOverlay');
+      const progressBar = document.getElementById('progressBar').firstElementChild;
+      overlay.style.display = 'flex';
+      
+      try {
+        // Create offline context to process effects
+        const offlineContext = new OfflineAudioContext(
+          currentAudioBuffer.numberOfChannels,
+          currentAudioBuffer.length,
+          currentAudioBuffer.sampleRate
+        );
+
+        // RECREATE PROCESSING CHAIN FOR OFFLINE RENDERING
+        const source = offlineContext.createBufferSource();
+        source.buffer = currentAudioBuffer;
+        
+        const distortion = offlineContext.createWaveShaper();
+        distortion.curve = makeDistortionCurve(4000);
+        distortion.oversample = '4x';
+        
+        const bassBoost = offlineContext.createBiquadFilter();
+        bassBoost.type = 'lowshelf';
+        bassBoost.frequency.setValueAtTime(200, 0);
+        bassBoost.gain.setValueAtTime(50, 0);
+        
+        const bitcrusher = new BitCrusher(offlineContext, {
+          bits: 4,
+          normfreq: 0.1
+        });
+        
+        const limiter = offlineContext.createDynamicsCompressor();
+        limiter.threshold.setValueAtTime(-20, 0);
+        limiter.ratio.setValueAtTime(20, 0);
+
+        // Connect offline processing chain
+        source.connect(distortion)
+          .connect(bassBoost)
+          .connect(bitcrusher.input)
+          .connect(limiter)
+          .connect(offlineContext.destination);
+
+        source.start(0);
+        
+        // RENDER PROCESSED AUDIO
+        const renderedBuffer = await offlineContext.startRendering();
+        
+        // USE RENDERED BUFFER FOR ENCODING
+        const left = renderedBuffer.getChannelData(0);
+        const right = renderedBuffer.numberOfChannels > 1 
+          ? renderedBuffer.getChannelData(1)
+          : left;
+
+        const sampleRate = renderedBuffer.sampleRate;
+        const channels = renderedBuffer.numberOfChannels;
+        mp3Encoder = new lamejs.Mp3Encoder(channels, sampleRate, 128);
+
+        // Convert to Int16 and interleave
+        const samples = new Int16Array(left.length * channels);
+        for (let i = 0; i < left.length; i++) {
+          samples[i * channels] = Math.max(-0.9999, Math.min(0.9999, left[i])) * 32767;
+          if (channels > 1) {
+            samples[i * channels + 1] = Math.max(-0.9999, Math.min(0.9999, right[i])) * 32767;
+          }
+        }
+
+        let mp3Data = [];
+        const sampleBlockSize = 1152;
+        let offset = 0;
+
+        function processChunk() {
+          const chunkSamples = samples.subarray(offset, offset + sampleBlockSize * channels);
+          offset += sampleBlockSize * channels;
+
+          // Split channels for MP3 encoding
+          const leftChunk = [];
+          const rightChunk = [];
+          for (let i = 0; i < chunkSamples.length; i += channels) {
+            leftChunk.push(chunkSamples[i]);
+            if (channels > 1) rightChunk.push(chunkSamples[i + 1]);
+          }
+
+          const mp3buf = channels === 1
+            ? mp3Encoder.encodeBuffer(leftChunk)
+            : mp3Encoder.encodeBuffer(leftChunk, rightChunk);
+
+          if (mp3buf.length > 0) mp3Data.push(mp3buf);
+          
+          progressBar.style.width = `${Math.min(100, (offset / samples.length) * 100)}%`;
+
+          if (offset < samples.length) {
+            setTimeout(processChunk, 1);
+          } else {
+            const finalMp3 = mp3Encoder.flush();
+            if (finalMp3.length > 0) mp3Data.push(finalMp3);
+            
+            const blob = new Blob(mp3Data, { type: 'audio/mp3' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `BADQUAL_BASSED${Date.now()}.mp3`;
+            document.body.appendChild(a);
+            a.click();
+            
+            setTimeout(() => {
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+              overlay.style.display = 'none';
+            }, 100);
+          }
+        }
+
+        processChunk();
+      } catch (err) {
+        alert('BASS TOO STRONG! (ERROR)');
+        console.error('Core meltdown:', err);
+        overlay.style.display = 'none';
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('audioInput').addEventListener('change', function(e) {
+      const file = e.target.files[0]
+      if (file) loadAudio(file)
+    })
+
+    function togglePlayback() {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume()
+      }
+      if (sourceNode && isPlaying) {
+        sourceNode.stop()
+        isPlaying = false
+      } else if (sourceNode && !isPlaying) {
+        loadAudio(document.getElementById('audioInput').files[0])
+      }
+    }
+
+    // Start audio context on first user interaction
+    document.addEventListener('click', () => {
+      if (audioContext.state === 'suspended') {
+        audioContext.resume()
+      }
+    }, { once: true })
+  </script>
+</body>
+</html>
